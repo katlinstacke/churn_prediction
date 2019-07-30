@@ -7,13 +7,13 @@ install.packages("Hmisc")
 install.packages("MASS")
 install.packages("caret")
 install.packages("rpart")
-install.packages("rpartplot")
 install.packages("rminer")
+install.packages("rpart.plot")
 install.packages("nnet")
 install.packages("Amelia")
 install.packages("caTools")
 install.packages("dummies")
-install.packages("stats")
+# install.packages("stats")
 
 library(tibble)
 library(corrplot)
@@ -22,7 +22,7 @@ library(Hmisc)
 library(MASS)
 library(caret)
 library(rpart)
-library(rpartplot)
+library(rpart.plot)
 library(rminer)
 library(nnet)
 library(Amelia)
@@ -31,12 +31,10 @@ library(dummies)
 library(dplyr)
 
 # Criar diretório e salvar arquivos para análise
-getwd()
 setwd("/home/stacke/Documentos/Desafio_Indicium")
-getwd()
 
 # Importar e Carregar a base de dados de Churn
-data_training <- read.csv("Abandono_clientes.csv", header = TRUE)
+data_training <- as_tibble(read.csv("Abandono_clientes.csv", header = TRUE))
 
 ##### Análise Exploratória ######
 'Num primeiro momento, é importante analisar os dados de forma exploratória para entender quais variáveis temos e suas dimensões.' 
@@ -44,10 +42,9 @@ data_training <- read.csv("Abandono_clientes.csv", header = TRUE)
 dim(data_training)
 names(data_training)
 
-'Assim, temos 13 variáveis (colunas) e 10000 casos de variáveis (linhas). Há variáveis como Gender (Gênero) e Tenure (Tempo de Permanência). 
+'Assim, temos 14 variáveis (colunas) e 10000 casos de variáveis (linhas). Há variáveis como Gender (Gênero) e Tenure (Tempo de Permanência). 
 O output que queremos prever é a variável Churn (abandono).'
 
-data_training <- tibble(data_training)
 class(data_training)
 head(data_training)
 print(data_training)
@@ -66,7 +63,6 @@ As classes dos objetos em R são críticas para o desempenho.'
 
 '1. Transformar os casos de variáveis categóricas de 0 e 1 para Não e Sim. É importante informar que as variáveis HasCrCard, IsActiveMember e Exited são variáveis categóricas e não numéricas, por isso
 o uso do comando factor(). Assim, redefinem-se as variáveis com os rótulos labels() associados aos níveis (levels).'
-
 
 data_training$HasCrCard <- factor(data_training$HasCrCard, label = c("Não", "Sim"), levels = 0:1)
 data_training$IsActiveMember <- factor(data_training$IsActiveMember, labels = c("Não", "Sim"), levels = 0:1)
