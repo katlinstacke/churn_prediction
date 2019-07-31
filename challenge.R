@@ -35,15 +35,19 @@ setwd("/home/stacke/Documentos/Desafio_Indicium")
 
 # Importar e Carregar a base de dados de Churn
 data_training <- as_tibble(read.csv("Abandono_clientes.csv", header = TRUE))
+data_testing <- as_tibble(read.csv("Abandono_teste.csv", header = TRUE, sep=";"))
 
-##### Análise Exploratória ######
-'Num primeiro momento, é importante analisar os dados de forma exploratória para entender quais variáveis temos e suas dimensões.' 
+data_training
+data_testing
+
+##### Análise Exploratória e ETL ###### 
+'Os modelos preditivos baseados no aprendizado de máquina, ao contrário dos modelos de estatística tradicional, são gerados pelo algoritmo do computador, e não por interpretação de resultados.
+Num primeiro momento, é importante analisar os dados de forma exploratória para entender quais variáveis temos e suas dimensões.' 
 
 dim(data_training)
 names(data_training)
 
-'Assim, temos 14 variáveis (colunas) e 10000 casos de variáveis (linhas). Há variáveis como Gender (Gênero) e Tenure (Tempo de Permanência). 
-O output que queremos prever é a variável Churn (abandono).'
+'Assim, temos 14 variáveis (colunas) e 10000 casos de variáveis (linhas). Há variáveis como Gender (Gênero) e Tenure (Tempo de Permanência). O output que queremos prever é a variável Churn (abandono).'
 
 class(data_training)
 head(data_training)
@@ -53,7 +57,10 @@ str(data_training) # structure of the data
 print(summary(data_training)) # undesrtanding of the data
 'Tabelar todas as variaveis e características. A coluna Exited é o target, objetivo.'
 
-## ETL - Estruturando os Dados ## 
+'1. Qual é o grau de correlação entre os pontos de dados disponíveis e o atrito?
+2. Em que estágio do ciclo de vida do produto eles saíram?
+Explorar cada ponto de dados e suas proporções - os modelos de aprendizado de máquina geralmente fazem isso significativamente melhor do que os humanos e encontram padrões inesperados.'
+
 'Explicar o que é ETL. 
 O processo de limpeza e tratamento de dados é tão importante quanto o de modelagem, já que pode evitar retrabalhos futuros e melhores modelagens.
 O primeiro passo é alterar as variáveis de caracteres (categóricas) para fatores, pois estas variáveis são armazenadas em um fator. Geralmente, 
@@ -64,10 +71,10 @@ As classes dos objetos em R são críticas para o desempenho.'
 '1. Transformar os casos de variáveis categóricas de 0 e 1 para Não e Sim. É importante informar que as variáveis HasCrCard, IsActiveMember e Exited são variáveis categóricas e não numéricas, por isso
 o uso do comando factor(). Assim, redefinem-se as variáveis com os rótulos labels() associados aos níveis (levels).'
 
-data_training$HasCrCard <- factor(data_training$HasCrCard, label = c("Não", "Sim"), levels = 0:1)
+'data_training$HasCrCard <- factor(data_training$HasCrCard, label = c("Não", "Sim"), levels = 0:1)
 data_training$IsActiveMember <- factor(data_training$IsActiveMember, labels = c("Não", "Sim"), levels = 0:1)
 data_training$Exited <- factor(data_training$Exited, labels = c("Não", "Sim"), levels = 0:1)
-print(data_training)
+print(data_training)'
 
 '2. Verificar valores ausentes. Verifiquei se há valores ausentes na colunas, mas como não havia, não foi preciso remover nenhum dado.'
 
@@ -92,20 +99,8 @@ No entanto, como a correlação é muito baixa, não removerei as variáveis.'
 data_training$RowNumber <- NULL
 data_training$CustomerId <- NULL
 data_training$Surname <- NULL
+data_training
 
-# Dividir a base de dados 
-
-library(caret)
-
-# selecting random seed to reproduce results
-set.seed(5)
-
-# sampling 75% of the rows
-inTrain <- createDataPartition(y = data_training$Exited, p=0.75, list=FALSE)
-
-# train/test split; 75%/25%
-train <- data_training[inTrain,]
-test <- data_training[-inTrain,]
 
 ##### Estatística Descritiva #####
 
@@ -181,22 +176,29 @@ modelo. Como recebi dois datasets já preparados para treinamento e teste, não 
 um modelo de classificação é o ideal. O modelo de regressão logística é o melhor que podemos interpretar porque podemos verificar
 com mais facilidade a relação entre as features e os outputs, a escolha de um modelo é considerado uma das boas práticas de Machine Learning.
 A desvantagem da regressão logística é que ela tem um viés no sentido de ajustes lineares. Se o limite de decisão não for linear, talvez não funcione tão bem quanto um modelo como o Random Forest.'
-'Tanto problemas de classificação quanto de regressão são modelos preditivos, mas utilizou-se pelo modelo de classificação pois, 
+'Tanto problemas de classificação quanto de regressão são modelos preditivos, mas utilizou-se o modelo de classificação pois, 
 neste caso, a variável resposta é de natureza qualitativa (churn sim ou não).'
 
-# Dimensões dos DataSets: data_training e data_test
+# Dividir a base de dados 
 
-dim(data_training); dim(data_testing)
+library(caret)
+
+intrain <- createDataPartition(y = data_training$Exited, p = 0.7, list = FALSE)
+set.seed(2018)
+training <- data_training[intrain, ]
+testing <- data_training[- intrain, ]
+
+dim(training); dim(testing)
 
 # fitting the model
 'Para implementar um modelo de regressão logística utilizarei a função de modelos lineares generalizados (GLM). Existem diferente tipos
 de regressão logística linear, mas será usada, aqui, o argumento family = binomial, pois fornece estimativas pontuais dos parâmetros, erros
 padrão, p-valores de Wald entre outras informações.'
 
-log_model <- glm(Exited~., data = churn, family = binomial(link="logit"))
+log_model <- glm(Exited~., data = training, family = binomial(link = "logit"))
 print(summary(log_model))
 
-'As principais variáveis que explicam o modelo são as que possuem o menor p-valor, sendo estatisticamente mais significantes: 
+'REVER: As principais variáveis que explicam o modelo são as que possuem o menor p-valor, sendo estatisticamente mais significantes: 
 GeographyGermany, GenderMale, Age, Balance e IsActiveMemberSim.'
 
 anova(log_model, test="Chisq")
@@ -205,26 +207,19 @@ anova(log_model, test="Chisq")
 o desvio, enquanto Balance não parece ter melhorado o modelo com seu desvio de 36.02, mesmo tendo um p-valor baixo."
 
 # Assessing the predictive ability of the Logistic Regression model
-
-data_testing$Exited <- as.character(data_testing$Exited)
-data_testing$Exited[data_testing$Exited == "No"] <- "0"
-data_testing$Exited[data_testing$Exited == "Yes"] <- "1"
-fitted.results <- predict(log_model, newdata = data_testing, type = 'response')
+fitted.results <- predict(log_model, newdata = testing, type = 'response')
 fitted.results <- ifelse(fitted.results > 0.5, 1, 0)
-misClasificError <- mean(fitted.results != data_testing$Exited)
+misClasificError <- mean(fitted.results != testing$Exited)
 print(paste('Precisão da Regressão Logística',1-misClasificError))
 
 
-print("Confusion Matrix for Logistic Regression"); table(testing$Churn, fitted.results > 0.5)
-
-# making predictions
-churn.probs <- predict(log_model, data_testing, type = "response")
-head(churn.probs)
-
-# Looking at the response encoding
-contrasts(df$Churn)Copy
-
-contrasts(df$Churn)
+print("Confusion Matrix for Logistic Regression")
+table(testing$Exited, fitted.results > 0.5)
+'no total foram 223 sim e 2777 não churn,
+true positive (129): previsão de churn e que realmente aconteceu
+true negative (94): previsão de churn e não aconteceu
+false positive (448): previsão de não churn e não aconteceu
+true positive (2329): pr44evisão de não churn e aconteceu o churn'
 
 
 
