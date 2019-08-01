@@ -13,6 +13,9 @@ install.packages("nnet")
 install.packages("Amelia")
 install.packages("caTools")
 install.packages("dummies")
+install.packages("partykit")
+install.packages('randomForest')
+
 # install.packages("stats")
 
 library(tibble)
@@ -29,6 +32,8 @@ library(Amelia)
 library(caTools)
 library(dummies)
 library(dplyr)
+library(partykit)
+library(randomForest)
 
 # Criar diretório e salvar arquivos para análise
 setwd("/home/stacke/Documentos/Desafio_Indicium")
@@ -75,6 +80,7 @@ o uso do comando factor(). Assim, redefinem-se as variáveis com os rótulos lab
 data_training$IsActiveMember <- factor(data_training$IsActiveMember, labels = c("Não", "Sim"), levels = 0:1)
 data_training$Exited <- factor(data_training$Exited, labels = c("Não", "Sim"), levels = 0:1)
 print(data_training)'
+data_training$Exited <- factor(data_training$Exited, labels = c("Não", "Sim"), levels = 0:1)
 
 '2. Verificar valores ausentes. Verifiquei se há valores ausentes na colunas, mas como não havia, não foi preciso remover nenhum dado.'
 
@@ -171,6 +177,7 @@ particionado, seguindo a metodologia de validação cruzada (cross validation). 
 de treinamento que será usado para criar o modelo, e a segunda parte será o conjunto de testes que será usado para avaliar o nosso 
 modelo. Como recebi dois datasets já preparados para treinamento e teste, não precisarei dividir o banco de dados.'
 
+## LOGISTIC REGRESSION ##
 
 'Logistic Regression - é um modelo de classificação linear e como estamos lidando com previsão de abandono de clientes ou não,
 um modelo de classificação é o ideal. O modelo de regressão logística é o melhor que podemos interpretar porque podemos verificar
@@ -216,12 +223,42 @@ print(paste('Precisão da Regressão Logística',1-misClasificError))
 print("Confusion Matrix for Logistic Regression")
 table(testing$Exited, fitted.results > 0.5)
 'no total foram 223 sim e 2777 não churn,
-true positive (129): previsão de churn e que realmente aconteceu
-true negative (94): previsão de churn e não aconteceu
-false positive (448): previsão de não churn e não aconteceu
-true positive (2329): pr44evisão de não churn e aconteceu o churn'
+true positive (135): previsão de churn e que realmente aconteceu
+true negative (101): previsão de churn e não aconteceu
+false positive (506): previsão de não churn e aconteceu churn
+true positive (2258): previsão de não churn e não aconteceu o churn'
 
+# ODDS ratio - chances de um evento acontecer
+exp(cbind(OR = coef(log_model), confint(log_model)))
 
+## DECISION TREE + factor(Exited) ##
 
+tree_model <- ctree(Exited ~ Geography+Gender+Age, training)
+plot(tree_model)
 
+prediction_matrix_tree <- predict(tree_model, testing)
+print("Confusion Matrix for Decision Tree"); table(Predicted = prediction_matrix_tree, Actual = testing$Exited)
+
+p1 <- predict(tree_model, training)
+tab1 <- table(Predicted = p1, Actual = training$Exited)
+tab2 <- table(Predicted = prediction_matrix_tree, Actual = testing$Exited)
+print(paste('Decision Tree Accuracy',sum(diag(tab2))/sum(tab2)))
+
+## RANDOM FOREST
+random_forest_model <- randomForest(Exited ~., data = training)
+print(random_forest_model)
+
+prediction_rf <- predict(random_forest_model, testing)
+#caret::confusionMatrix(pred_rf, testing$Churn)
+table(Predicted = prediction_rf, Actual = testing$Exited)
+plot(random_forest_model)
+
+# modelo após ajuste
+rfModel_new <- randomForest(Exited ~., data = training, ntree = 400,
+                            mtry = 2, importance = TRUE, proximity = TRUE)
+print(rfModel_new)
+
+pred_rf_new <- predict(rfModel_new, testing)
+caret::confusionMatrix(pred_rf_new, testing$Exited)
+data_training
 
