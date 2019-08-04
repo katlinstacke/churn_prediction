@@ -52,18 +52,55 @@ print(data_testing)
 
 ##### Estatística Descritiva #####
 
-###### separar a base em churn e não churn
+###### Separar a base em churn e não churn
 data_training_churn <- filter(data_training, Exited == 1);
 data_training_notchurn <- filter(data_training, Exited == 0);
 
+# Estimated Salary
 
-# churn
-data_training$CreditScore
+data_training_churn
+is.factor(data_training_churn$EstimatedSalary)
+is.numeric(data_training_churn$EstimatedSalary)
+range(data_training_churn$EstimatedSalary) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
+nclass.Sturges(data_training_churn$EstimatedSalary)
+EstimatedSalary_churn <- table(cut(data_training_churn$EstimatedSalary, seq(11.0, 199993.0, l = 16)))
+prop.table(EstimatedSalary_churn)
+salary_graphic <- hist(EstimatedSalary_churn)
+
+data_training_notchurn
+is.factor(data_training_notchurn$EstimatedSalary)
+is.numeric(data_training_notchurn$EstimatedSalary)
+range(data_training_notchurn$EstimatedSalary) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
+nclass.Sturges(data_training_notchurn$EstimatedSalary)
+EstimatedSalary_notchurn <- table(cut(data_training_notchurn$EstimatedSalary, seq(11.0, 199993.0, l = 16)))
+prop.table(EstimatedSalary_notchurn)
+salary_graphic <- hist(EstimatedSalary_notchurn)
+
+# CreditScore
+
+data_training_churn
+is.factor(data_training_churn$CreditScore)
+is.numeric(data_training_churn$CreditScore)
+range(data_training_churn$CreditScore) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
+nclass.Sturges(data_training_churn$CreditScore)
+CreditScore_churn <- table(cut(data_training_churn$CreditScore, seq(20, 199993.0, l = 4)))
+prop.table(CreditScore_churn)
+salary_graphic <- hist(CreditScore_churn)
+
+data_training_notchurn
+is.factor(data_training_notchurn$CreditScore)
+is.numeric(data_training_notchurn$CreditScore)
+range(data_training_notchurn$CreditScore) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
+nclass.Sturges(data_training_notchurn$CreditScore)
+CreditScore_notchurn <- table(cut(data_training_notchurn$CreditScore, seq(11.0, 199993.0, l = 16)))
+prop.table(CreditScore_notchurn)
+salary_graphic <- hist(CreditScore_notchurn)
 
 
 ## Análise Univariada
+
 'Foram classificadas as variáveis quanto a seus tipos: qualitativas (nominal ou ordinal) ou quantitativa (discreta ou contínua). 
-A fim de resumir a distribuição das variáveis veremos gráficos, tabelas e/ou outras medidas.'
+A fim de resumir o comportamento das variáveis veremos gráficos, tabelas e/ou outras medidas.'
 
 # Nominal
 
@@ -82,7 +119,6 @@ prop.table(EstimatedSalary)
 salary_graphic <- hist(EstimatedSalary)
 
 
-
 p1 <- ggplot(data_training, aes(x=Gender)) + ggtitle("Gender") + xlab("Gender") +
   geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5) + ylab("Percentage") + coord_flip() + theme_minimal()
 p1
@@ -94,12 +130,12 @@ p2
 p3 <- ggplot(data_training, aes(x=IsActiveMember)) + ggtitle("IsActiveMember") + xlab("IsActiveMember") + 
   geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5) + ylab("Percentage") + coord_flip() + theme_minimal()
 p3
+
 data_training
 
 summary(data_training)
 
 # Customer Churn Overview
-
 ggplot(data_training, aes(x = data_training$Exited)) + 
   geom_freqpoly(aes(color = Exited, linetype = Exited)) +
   theme_minimal()
@@ -146,9 +182,7 @@ print(summary(data_training))
 * EstimatedSalary (estimativa salarial)
 * Exited (abandono/saída do cliente)
 '
-
-'1. Qual é o grau de correlação entre os pontos de dados disponíveis e o atrito?
-2. Em que estágio do ciclo de vida do produto eles saíram?
+'
 Explorar cada ponto de dados e suas proporções - os modelos de aprendizado de máquina geralmente fazem isso significativamente melhor do que os humanos e encontram padrões inesperados.'
 
 'Explicar o que é ETL. 
@@ -193,8 +227,8 @@ data_training
 'Para simular um experimento com o objetivo de prever se os clientes vão dar “churn”, precisamos trabalhar com um banco de dados 
 particionado, seguindo a metodologia de validação cruzada (cross validation). O dataset de treinamento será dividido em duas partes, uma será o conjunto 
 de treinamento que será usado para criar o modelo, e a segunda parte será o conjunto de testes que será usado para validar o nosso 
-modelo. Existem diversos modelos que podem ser utilizados para realizar previsões, dos quais selecionei o de Logistic Regression, Tree Decision e Random Forest. O modelo com maior acurácia será utilizado para prever 
-o churn no dataset de teste. '
+modelo. Existem diversos modelos que podem ser utilizados para realizar previsões, dos quais selecionei o de Logistic Regression, Tree Decision e Random Forest. 
+O modelo com maior acurácia será utilizado para prever o churn no dataset de teste. '
 
 ## LOGISTIC REGRESSION ##
 
