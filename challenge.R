@@ -16,6 +16,8 @@ install.packages("dummies")
 install.packages("partykit")
 install.packages("randomForest")
 install.packages("rmarkdown")
+install.packages("scales")
+install.packages("dplyr")
 
 # load packages 
 library(tibble)
@@ -35,6 +37,7 @@ library(dplyr)
 library(partykit)
 library(randomForest)
 library(rmarkdown)
+library(scales)
 
 # Change directory
 setwd("/home/stacke/Documentos/Desafio_Indicium")
@@ -56,104 +59,37 @@ print(data_testing)
 data_training_churn <- filter(data_training, Exited == 1);
 data_training_notchurn <- filter(data_training, Exited == 0);
 
-# Estimated Salary
+print(summary(data_training_churn))
+print(summary(data_training_notchurn))
 
-data_training_churn
-is.factor(data_training_churn$EstimatedSalary)
-is.numeric(data_training_churn$EstimatedSalary)
-range(data_training_churn$EstimatedSalary) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
-nclass.Sturges(data_training_churn$EstimatedSalary)
-EstimatedSalary_churn <- table(cut(data_training_churn$EstimatedSalary, seq(11.0, 199993.0, l = 16)))
-prop.table(EstimatedSalary_churn)
-salary_graphic <- hist(EstimatedSalary_churn)
+# Plotar um gráfico de pilhas de Churn por Gênero
 
-data_training_notchurn
-is.factor(data_training_notchurn$EstimatedSalary)
-is.numeric(data_training_notchurn$EstimatedSalary)
-range(data_training_notchurn$EstimatedSalary) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
-nclass.Sturges(data_training_notchurn$EstimatedSalary)
-EstimatedSalary_notchurn <- table(cut(data_training_notchurn$EstimatedSalary, seq(11.0, 199993.0, l = 16)))
-prop.table(EstimatedSalary_notchurn)
-salary_graphic <- hist(EstimatedSalary_notchurn)
+source("churn_stacked_bar.R")
+stackedBarPlotter = ChurnStackedBar$new(data_training)
+stackedBarPlotter$plot("Churn por Gênero", "Gênero", "Gender")
 
-# CreditScore
+# Plotar um gráfico de pilhas de Churn por Geografia
 
-data_training_churn
-is.factor(data_training_churn$CreditScore)
-is.numeric(data_training_churn$CreditScore)
-range(data_training_churn$CreditScore) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
-nclass.Sturges(data_training_churn$CreditScore)
-CreditScore_churn <- table(cut(data_training_churn$CreditScore, seq(20, 199993.0, l = 4)))
-prop.table(CreditScore_churn)
-salary_graphic <- hist(CreditScore_churn)
+stackedBarPlotter$plot("Churn por Geografia", "País", "Geography")
 
-data_training_notchurn
-is.factor(data_training_notchurn$CreditScore)
-is.numeric(data_training_notchurn$CreditScore)
-range(data_training_notchurn$CreditScore) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
-nclass.Sturges(data_training_notchurn$CreditScore)
-CreditScore_notchurn <- table(cut(data_training_notchurn$CreditScore, seq(11.0, 199993.0, l = 16)))
-prop.table(CreditScore_notchurn)
-salary_graphic <- hist(CreditScore_notchurn)
+# Plotar um gráfico de pilhas de Churn por Tempo de Permanência
+
+stackedBarPlotter$plot("Churn por Tempo de Permanência", "Tempo de Permanência", "Tenure")
+
+# Plotar um gráfico de pilhas de Churn por Cartão de Crédito
+
+stackedBarPlotter$plot("Churn por Cartão de Crédito", "Possui Cartão de Crédito", "HasCrCard")
 
 
-## Análise Univariada
+# Plotar um gráfico de pilhas de Churn por Membro Ativo
 
-'Foram classificadas as variáveis quanto a seus tipos: qualitativas (nominal ou ordinal) ou quantitativa (discreta ou contínua). 
-A fim de resumir o comportamento das variáveis veremos gráficos, tabelas e/ou outras medidas.'
-
-# Nominal
-
-'Exited porque essa é a variável resposta'
-
-# Discreta 
-
-# Contínua
-
-is.factor(data_training$EstimatedSalary)
-is.numeric(data_training$EstimatedSalary)
-range(data_training$EstimatedSalary) 'ver valores mínimos e máximos para definir o número de agrupamentos/classes'
-nclass.Sturges(data_training$EstimatedSalary)
-EstimatedSalary <- table(cut(data_training$EstimatedSalary, seq(11.0, 199993.0, l = 16)))
-prop.table(EstimatedSalary)
-salary_graphic <- hist(EstimatedSalary)
+stackedBarPlotter$plot("Churn por Membro Ativo", "Possui Membro Ativo", "IsActiveMember")
 
 
-p1 <- ggplot(data_training, aes(x=Gender)) + ggtitle("Gender") + xlab("Gender") +
-  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5) + ylab("Percentage") + coord_flip() + theme_minimal()
-p1
 
-p2 <- ggplot(data_training, aes(x=HasCrCard)) + ggtitle("HasCrCard") + xlab("HasCrCard") + 
-  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5) + ylab("Percentage") + coord_flip() + theme_minimal()
-p2
 
-p3 <- ggplot(data_training, aes(x=IsActiveMember)) + ggtitle("IsActiveMember") + xlab("IsActiveMember") + 
-  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5) + ylab("Percentage") + coord_flip() + theme_minimal()
-p3
 
-data_training
 
-summary(data_training)
-
-# Customer Churn Overview
-ggplot(data_training, aes(x = data_training$Exited)) + 
-  geom_freqpoly(aes(color = Exited, linetype = Exited)) +
-  theme_minimal()
-labs(title = "Abandono de Clientes de Instituição Financeira", x = "Abandono", y = "Frequência")
-
-# Age Overview
-age_graphic <- ggplot(data_training, aes(x = data_training$Age)) +
-  geom_histogram(color = "Gray", fill = "Blue", binwidth = 3) +
-  labs(x = "Idade", y = "Quantidade", title = "Idade do Cliente")
-mean(data_training$Age) # = 38.9218
-age_graphic
-
-# Tenure Overview
-tenure_graphic <- ggplot(data_training, aes(x = data_training$Tenure)) +
-  geom_histogram(color = "Gray", fill = "Blue", binwidth = 3) +
-  labs(x = "Tempo", y = "Quantidade", title = "Tempo de Permanência")
-mean(data_training$Tenure)  # = 5.0128
-tenure_graphic
 
 ##### Exploration Analysis and ETL ###### 
 'Os modelos preditivos baseados no aprendizado de máquina, ao contrário dos modelos de estatística tradicional, são gerados pelo algoritmo do computador, e não por interpretação de resultados.
