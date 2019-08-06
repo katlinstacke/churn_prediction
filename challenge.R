@@ -44,51 +44,13 @@ setwd("/home/stacke/Documentos/Desafio_Indicium")
 
 # Import datasets to tibble
 
-'Tibble é um data.frame mais enxuto na visualização, pois exibe até 10 linhas somente no console, e já detalha as classes das variáveis, tornando-se muito prático manipular os dados. '
+'Tibble é um data.frame que possui visualização mais enxuta, exibindo até 10 linhas somente no console, e detalha as classes das variáveis, tornando-se muito prático manipular os dados. '
 
 data_training <- as_tibble(read.csv("Abandono_clientes.csv", header = TRUE))
 data_testing <- as_tibble(read.csv("Abandono_teste.csv", header = TRUE, sep=";"))
 
 print(data_training)
 print(data_testing)
-
-
-##### Estatística Descritiva #####
-
-###### Separar a base em churn e não churn
-data_training_churn <- filter(data_training, Exited == 1);
-data_training_notchurn <- filter(data_training, Exited == 0);
-
-print(summary(data_training_churn))
-print(summary(data_training_notchurn))
-
-# Plotar um gráfico de pilhas de Churn por Gênero
-
-source("churn_stacked_bar.R")
-stackedBarPlotter = ChurnStackedBar$new(data_training)
-stackedBarPlotter$plot("Churn por Gênero", "Gênero", "Gender")
-
-# Plotar um gráfico de pilhas de Churn por Geografia
-
-stackedBarPlotter$plot("Churn por Geografia", "País", "Geography")
-
-# Plotar um gráfico de pilhas de Churn por Tempo de Permanência
-
-stackedBarPlotter$plot("Churn por Tempo de Permanência", "Tempo de Permanência", "Tenure")
-
-# Plotar um gráfico de pilhas de Churn por Cartão de Crédito
-
-stackedBarPlotter$plot("Churn por Cartão de Crédito", "Possui Cartão de Crédito", "HasCrCard")
-
-
-# Plotar um gráfico de pilhas de Churn por Membro Ativo
-
-stackedBarPlotter$plot("Churn por Membro Ativo", "Possui Membro Ativo", "IsActiveMember")
-
-
-
-
-
 
 
 ##### Exploration Analysis and ETL ###### 
@@ -119,10 +81,10 @@ print(summary(data_training))
 * Exited (abandono/saída do cliente)
 '
 '
-Explorar cada ponto de dados e suas proporções - os modelos de aprendizado de máquina geralmente fazem isso significativamente melhor do que os humanos e encontram padrões inesperados.'
+Explorar cada ponto de dados e suas proporções - os modelos de aprendizado de máquina geralmente fazem isso significativamente melhor do 
+que os humanos e encontram padrões inesperados.'
 
-'Explicar o que é ETL. 
-O processo de limpeza e tratamento de dados é tão importante quanto o de modelagem, já que pode evitar retrabalhos futuros e melhores modelagens.
+'O processo de limpeza e tratamento de dados é tão importante quanto o de modelagem, já que pode evitar retrabalhos futuros e melhores modelagens.
 O primeiro passo é alterar as variáveis de caracteres (categóricas) para fatores, pois estas variáveis são armazenadas em um fator. Geralmente, 
 as variáveis categóricas são alocadas em 0, 1, 2, 3, com documentação adicional para explicar o que cada número significa. 
 Claramente, essa não é a forma mais simples e eficiente de descrever estatisticamente as variáveis categóricas, justificando o armazenamento em um vetor de caracteres, ou seja, fator.
@@ -155,6 +117,114 @@ data_training$RowNumber <- NULL
 data_training$CustomerId <- NULL
 data_training$Surname <- NULL
 data_training
+
+
+
+##### Estatística Descritiva #####
+
+###### Separar a base em churn e não churn
+data_training_churn <- filter(data_training, Exited == 1);
+data_training_notchurn <- filter(data_training, Exited == 0);
+
+print(summary(data_training_churn))
+print(summary(data_training_notchurn))
+
+# ETL para plotar gráficos 
+source("churn_stacked_bar.R")
+statistical_dataset <- as_tibble(read.csv("Abandono_clientes.csv", header = TRUE))
+
+# grafico de creditscore
+statistical_dataset$CreditScore
+
+for(i in 1:length(statistical_dataset$CreditScore)) {
+  creditScore <-  statistical_dataset$CreditScore[i];
+  if(creditScore < 500) {
+    statistical_dataset$CreditScore[i] = "1_Baixo";
+  } else if(creditScore < 700) {
+    statistical_dataset$CreditScore[i] = "2_Médio";
+  } else {
+    statistical_dataset$CreditScore[i] = "3_Alto";
+  }
+}
+statistical_dataset$CreditScore
+
+# grafico de balance
+
+for(i in 1:length(statistical_dataset$Balance)) {
+  balance <-  statistical_dataset$Balance[i];
+  if(balance < 50000.0) {
+    statistical_dataset$Balance[i] = "1_Baixo";
+  } else if(creditScore < 150000.0) {
+    statistical_dataset$Balance[i] = "2_Médio";
+  } else {
+    statistical_dataset$Balance[i] = "3_Alto";
+  }
+}
+statistical_dataset$Balance
+
+# grafico de estimativa salarial
+min(statistical_dataset$EstimatedSalary)
+max(statistical_dataset$EstimatedSalary)
+
+for(i in 1:length(statistical_dataset$EstimatedSalary)) {
+  EstimatedSalary <-  statistical_dataset$EstimatedSalary[i];
+  if(EstimatedSalary < 30000) {
+    statistical_dataset$EstimatedSalary[i] = "1_Baixo";
+  } else if(creditScore < 100000) {
+    statistical_dataset$EstimatedSalary[i] = "2_Médio";
+  } else {
+    statistical_dataset$EstimatedSalary[i] = "3_Alto";
+  }
+}
+statistical_dataset$EstimatedSalary
+
+
+
+stackedBarPlotter <- ChurnStackedBar$new(statistical_dataset)
+
+
+# Plotar um gráfico de pilhas de Churn por Gênero
+
+stackedBarPlotter$plot("Churn por Gênero", "Gênero", "Gender")
+
+# Plotar um gráfico de pilhas de Churn por Geografia
+
+stackedBarPlotter$plot("Churn por Geografia", "País", "Geography")
+
+# Plotar um gráfico de pilhas de Churn por Tempo de Permanência
+
+stackedBarPlotter$plot("Churn por Tempo de Permanência", "Tempo de Permanência", "Tenure")
+
+# Plotar um gráfico de pilhas de Churn por Cartão de Crédito
+
+stackedBarPlotter$plot("Churn por Cartão de Crédito", "Possui Cartão de Crédito", "HasCrCard")
+
+# Plotar um gráfico de pilhas de Churn por Membro Ativo
+
+stackedBarPlotter$plot("Churn por Membro Ativo", "Possui Membro Ativo", "IsActiveMember")
+
+
+
+# Plotar um gráfico de pilhas de Churn por Pontuação de Crédito
+
+stackedBarPlotter$plot("Churn por Pontuação de Crédito", "Pontuação de Crédito", "CreditScore")
+
+# Plotar um gráfico de pilhas de Churn por Idade
+
+stackedBarPlotter$plot("Churn por Idade", "Idade", "Age")
+
+# Plotar um gráfico de pilhas de Churn por Estimativa Salarial
+
+stackedBarPlotter$plot("Churn por Estimativa Salarial", "Estimativa Salarial", "EstimatedSalary")
+
+# Plotar um gráfico de pilhas de Churn por Balanço
+
+stackedBarPlotter$plot("Churn por Balanço", "Balanço", "Balance")
+
+# Plotar um gráfico de pilhas de Churn por Número de Produtos
+
+stackedBarPlotter$plot("Churn por Número de Produtos", "Número de Produtos", "NumOfProducts")
+
 
 
 
@@ -203,24 +273,19 @@ anova(log_model, test="Chisq")
 o desvio, enquanto Balance não parece ter melhorado o modelo com seu desvio de 36.02, mesmo tendo um p-valor baixo."
 
 # Assessing the predictive ability of the Logistic Regression model
-predict.result <- predict(log_model, newdata = training, type = 'response')
-testing$Exited <- ifelse(predict.result > 0.5, 1, 0)
-misClasificError <- mean(fitted.results != testing$Exited)
-print(paste('Precisão da Regressão Logística',1-misClasificError))
-
 fitted.results <- predict(log_model, newdata = testing, type = 'response')
 fitted.results <- ifelse(fitted.results > 0.5,1,0)
 misClasificError <- mean(fitted.results != testing$Exited)
 print(paste('Precisão da Regressão Logística',1-misClasificError))
 
-print("Matrix Confusa de Regressão Logística")
+print("Matriz Confusa de Regressão Logística")
 table(testing$Exited, fitted.results > 0.5)
 
-'no total foram 223 sim e 2777 não churn,
-true positive (135): previsão de churn e que realmente aconteceu
-true negative (101): previsão de churn e não aconteceu
-false positive (506): previsão de não churn e aconteceu churn
-true positive (2258): previsão de não churn e não aconteceu o churn'
+'No total foram 223 sim e 2777 não churn,
+True positive (135): previsão de churn e que realmente aconteceu
+True negative (101): previsão de churn e não aconteceu
+False positive (506): previsão de não churn e aconteceu churn
+True positive (2258): previsão de não churn e não aconteceu o churn'
 
 # ODDS ratio - chances de um evento acontecer
 exp(cbind(OR = coef(log_model), confint(log_model)))
@@ -240,12 +305,12 @@ tree_model <- ctree(Exited ~ Geography+Gender+Age, training)
 plot(tree_model)
 
 prediction_matrix_tree <- predict(tree_model, testing)
-print("Confusion Matrix for Decision Tree"); table(Predicted = prediction_matrix_tree, Actual = testing$Exited)
+print("Matriz Confusa para Árvore de Decisão"); table(Predicted = prediction_matrix_tree, Actual = testing$Exited)
 
 p1 <- predict(tree_model, training)
 tab1 <- table(Predicted = p1, Actual = training$Exited)
 tab2 <- table(Predicted = prediction_matrix_tree, Actual = testing$Exited)
-print(paste('Decision Tree Accuracy',sum(diag(tab2))/sum(tab2)))
+print(paste('Acurácia da Árvore de Decisão',sum(diag(tab2))/sum(tab2)))
 
 
 ## RANDOM FOREST
