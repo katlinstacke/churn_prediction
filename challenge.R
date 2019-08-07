@@ -318,7 +318,8 @@ random_forest_model <- randomForest(Exited ~., data = training)
 print(random_forest_model)
 
 prediction_rf <- predict(random_forest_model, testing)
-#caret::confusionMatrix(pred_rf, testing$Churn)
+caret::confusionMatrix(pred_rf, testing$Churn)
+
 table(Predicted = prediction_rf, Actual = testing$Exited)
 plot(random_forest_model)
 
@@ -333,13 +334,10 @@ table(Predicted = pred_rf_new, Actual = testing$Exited)
 
 varImpPlot(rfModel_new, sort=T, n.var = 10, main = 'Top 10 Feature Importance')
 
-# BEST MODEL: LOGISTIC REGRESSION #
-
+# BEST MODEL
 # Aplicação do modelo de regressão logística treinado, com melhor acurácia, no dataset de teste.
 predict_results <- predict(log_model, newdata = data_testing, type = 'response')
 data_testing$Exited <- ifelse(predict_results > 0.5, 1, 0)
-predict_results_test <- data_testing[, c(0, 14)]
-names(predict_results_test)[1] <- "predicValues"
 print(predict_results_test)
 
 # Converter tibble em csv
